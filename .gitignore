@@ -1,0 +1,15 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Generated data (published via GitHub Releases). Station master is kept.
+data/daily/
+data/hourly/
+data/manifest.json

@@ -1,0 +1,23 @@
+name: update
+
+on:
+  schedule:
+    - cron: "0 2 1 * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python run.py update
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="data-$(date +%Y-%m)"
+          zip -r data.zip data
+          gh release create "$tag" data.zip --title "$tag" --notes "Monthly snapshot" \
+            || gh release upload "$tag" data.zip --clobber
