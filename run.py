@@ -92,7 +92,11 @@ def run(update, limit):
             # Re-fetch from the start of the last stored day so that day's daily aggregate is
             # recomputed over all its hours, not just the tail. Overlap is de-duped on write.
             since = manifest[code][:10] + "T00:00:00"
-        rows = fetch.history(client, code, since=since)
+        try:
+            rows = fetch.history(client, code, since=since)
+        except RuntimeError as e:
+            print(f"[{n}/{len(codes)}] {code}: SKIPPED ({e})")
+            continue
         df = aggregate.normalize(rows, types)
         if df.is_empty():
             continue
