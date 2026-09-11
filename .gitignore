@@ -13,6 +13,8 @@ wheels/
 data/daily/
 data/hourly/
 data/manifest.json
+data/daily.parquet
+data/hourly.parquet
 
 # Release artifact built by update.yml and gh release upload.
 data.zip

@@ -29,7 +29,7 @@ Install [uv](https://docs.astral.sh/uv/), then:
 uv sync
 uv run python run.py backfill   # full history for every station; takes hours
 uv run python run.py update     # only readings newer than manifest.json
-uv run python run.py publish    # flatten data/ into dist/*.parquet
+uv run python run.py publish    # flatten into data/*.parquet    
 ```
 
 Both commands can be re-run safely, since overlapping rows are replaced rather

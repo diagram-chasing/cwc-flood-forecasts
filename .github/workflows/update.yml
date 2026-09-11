@@ -19,6 +19,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="data-$(date +%Y-%m)"
-          zip -r data.zip data
-          gh release create "$tag" data.zip dist/*.parquet --title "$tag" --notes "Monthly snapshot" \
-            || gh release upload "$tag" data.zip dist/*.parquet --clobber
+          zip -r data.zip data -x data/daily.parquet data/hourly.parquet data/README.md
+          gh release create "$tag" data.zip data/*.parquet --title "$tag" --notes "Monthly snapshot" \
+            || gh release upload "$tag" data.zip data/*.parquet --clobber

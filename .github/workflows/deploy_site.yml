@@ -64,7 +64,7 @@ jobs:
       - name: Add the flat Parquet files
         run: |
           uv run python run.py publish
-          cp dist/*.parquet site/dist/
+          cp data/*.parquet site/dist/
 
       - name: Upload the build
         uses: actions/upload-pages-artifact@v3

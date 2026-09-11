@@ -114,7 +114,7 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
     if args.command == "publish":
-        aggregate.publish(DATA, "dist")
+        aggregate.publish(DATA, DATA)
     else:
         run(update=args.command == "update", limit=args.limit)
 
