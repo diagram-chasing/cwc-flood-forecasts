@@ -34,8 +34,6 @@ const named = parameters.filter((d) => d.unit).length;
 const integer = d3.format(",");
 const decimal = d3.format(",.2f");
 
-// Water rises through these: the river, then the two levels the Commission
-// forecasts against, then the rain that drives both.
 const WATER = "var(--water)";
 const DEEP = "var(--water-deep)";
 const RAIN = "var(--rain)";
@@ -43,8 +41,7 @@ const WARNING = "var(--warning)";
 const DANGER = "var(--danger)";
 const FAINT = "var(--theme-foreground-faintest)";
 
-// Before 1965 the record is 67,000 scattered readings, a fifth of a percent of
-// the whole. Charting from 1900 would flatten everything after it.
+// Before 1965 the record is 67,000 scattered readings; charting from 1900 flattens the rest.
 const since = new Date(Date.UTC(1965, 0, 1));
 const sinceYear = 1965;
 const thisYear = d3.max(coverage, (d) => d.month).getUTCFullYear();
@@ -52,15 +49,13 @@ const years = [sinceYear, thisYear];
 
 const percent = d3.format(".0%");
 
-// Day of the year onto a leap year, so the axis ticks read as months. The year
-// is scaffolding, so the tooltip prints the day and month only.
+// Day of year mapped onto a leap year so ticks read as months.
 const doy = (d) => new Date(Date.UTC(2020, 0, d.doy));
 const wholeYear = [new Date(Date.UTC(2020, 0, 1)), new Date(Date.UTC(2020, 11, 31))];
 const dayLabel = d3.utcFormat("%-d %B");
 const metres = (d) => `${d > 0 ? "+" : ""}${d3.format(".2f")(d)} m`;
 
-// Only a station with a published danger level can be counted against it, and
-// only in a year it reported a water level at all.
+// Count only stations with a danger level, in years they reported a level.
 const gauged = new Set(stations.filter((d) => d.danger_level != null).map((d) => d.station_code));
 const dangerYears = d3
   .rollups(
@@ -90,8 +85,8 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
 # CWC flood forecast system
 
 <div class="lede">
-  Every daily reading from a Central Water Commission river gauge or dam since 1900,
-  as published on the Commission's Flood Forecast System portal.
+  Daily readings from every Central Water Commission river gauge and dam since 1900,
+  as published on its Flood Forecast System portal.
 </div>
 
 <div class="grid grid-cols-4">
@@ -137,7 +132,7 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
   </div>
   <div class="card">
     <h2>Readings per month</h2>
-    <h3>From 1965, where the record becomes continuous</h3>
+    <h3>Since 1965, when the record becomes continuous</h3>
     ${resize((width) => Plot.plot({
       width,
       height: 400,
@@ -163,7 +158,7 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
 <div class="grid grid-cols-2">
   <div class="card">
     <h2>Stations above their danger level</h2>
-    <h3>Among the 1,035 with a danger level published, split by whether they crossed it</h3>
+    <h3>Of the 1,035 stations with a published danger level</h3>
     ${resize((width) => Plot.plot({
       width,
       height: 300,
@@ -187,7 +182,7 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
   </div>
   <div class="card">
     <h2>Water level through the year</h2>
-    <h3>Metres against each station's own median, with the middle half shaded. Every year on record combined.</h3>
+    <h3>Metres from each station's median, all years combined. Shading is the middle half.</h3>
     ${resize((width) => Plot.plot({
       width,
       height: 300,
@@ -217,8 +212,7 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
 
 <div class="card">
   <h2>What the stations measure</h2>
-  <h3>Readings per parameter, with the number of stations reporting it. The 55
-  codes the Commission publishes no definition for are grouped as one.</h3>
+  <h3>Daily readings per parameter. The 55 undefined codes are grouped as one.</h3>
   ${resize((width) => Plot.plot({
     width,
     height: 340,
@@ -251,8 +245,7 @@ const sourceColor = {domain: ["gauge", "dam"], range: [WATER, DEEP], legend: tru
 <div class="controls">${picker}</div>
 
 ```js
-// Place the element with ${picker}; view() would render the generator's value.
-// Fifteen names are shared by more than one station, so the code goes in too.
+// Names are not unique, so the code is shown too.
 const picker = Inputs.select(
   stations.slice().sort((a, b) => d3.ascending(a.name ?? "", b.name ?? "")),
   {
@@ -268,8 +261,6 @@ const picked = Generators.input(picker);
 const annual = stationAnnual.filter((d) => d.station_code === picked.station_code);
 const dangerDays = d3.sum(annual, (d) => d.danger_days);
 
-// Two thirds of stations have a danger level and slightly fewer have a warning
-// level, so the subtitle covers all three cases.
 const thresholds = picked.danger_level == null
   ? "The Commission publishes no thresholds for this station"
   : picked.warning_level == null
@@ -304,7 +295,7 @@ const thresholds = picked.danger_level == null
       width,
       height: 250,
       marginLeft: 56,
-      // Fixed across stations, so switching to a sparse one shows how little it has.
+      // Fixed x domain so sparse stations look sparse.
       x: {label: null, domain: years, tickFormat: "d"},
       y: {label: null, grid: true, nice: true},
       marks: [
@@ -327,7 +318,7 @@ const thresholds = picked.danger_level == null
   </div>
   <div class="card">
     <h2>Rainfall per year</h2>
-    <h3>Millimetres, summed from the station's daily totals</h3>
+    <h3>Millimetres, summed from daily totals</h3>
     ${resize((width) => Plot.plot({
       width,
       height: 250,
