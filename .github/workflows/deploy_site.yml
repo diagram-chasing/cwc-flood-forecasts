@@ -59,6 +59,13 @@ jobs:
         run: pnpm build
         working-directory: site
 
+      # Pages sends CORS headers and release assets do not, so browser-based
+      # Parquet viewers read the flat files from here.
+      - name: Add the flat Parquet files
+        run: |
+          uv run python run.py publish
+          cp dist/*.parquet site/dist/
+
       - name: Upload the build
         uses: actions/upload-pages-artifact@v3
         with:

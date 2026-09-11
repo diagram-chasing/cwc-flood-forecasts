@@ -102,3 +102,14 @@ def prune_hourly(root):
             for f in d.glob("*.parquet"):
                 f.unlink()
             d.rmdir()
+
+
+def publish(root, out):
+    root, out = Path(root), Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    pl.read_csv(root / "stations.csv").write_parquet(out / "stations.parquet")
+    for tier, keys in (("daily", ["station_code", "datatype_code", "date_ist"]),
+                       ("hourly", ["station_code", "datatype_code", "datetime"])):
+        pl.scan_parquet(root / tier / "**/*.parquet").sort(keys).sink_parquet(
+            out / f"{tier}.parquet", row_group_size=1_000_000
+        )

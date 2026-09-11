@@ -13,11 +13,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
       - run: uv run python run.py update
+      - run: uv run python run.py publish
       - name: publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="data-$(date +%Y-%m)"
           zip -r data.zip data
-          gh release create "$tag" data.zip --title "$tag" --notes "Monthly snapshot" \
-            || gh release upload "$tag" data.zip --clobber
+          gh release create "$tag" data.zip dist/*.parquet --title "$tag" --notes "Monthly snapshot" \
+            || gh release upload "$tag" data.zip dist/*.parquet --clobber

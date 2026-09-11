@@ -110,10 +110,13 @@ def run(update, limit):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", choices=["backfill", "update"])
+    ap.add_argument("command", choices=["backfill", "update", "publish"])
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
-    run(update=args.command == "update", limit=args.limit)
+    if args.command == "publish":
+        aggregate.publish(DATA, "dist")
+    else:
+        run(update=args.command == "update", limit=args.limit)
 
 
 if __name__ == "__main__":
