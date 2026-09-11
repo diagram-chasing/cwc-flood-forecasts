@@ -1,0 +1,5 @@
+# Observable Framework build output and data loader cache
+dist/
+**/.observablehq/cache/
+
+node_modules/

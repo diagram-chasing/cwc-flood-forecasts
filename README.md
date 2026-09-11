@@ -1,66 +1,78 @@
-# flood-forecast-system
+# CWC flood forecast system
 
-Tidy dataset of river water level, discharge, rainfall, temperature and reservoir
-readings published by the [Central Water Commission](https://ffs.india-water.gov.in)
-on its Flood Forecast System portal.
+River levels, discharge, rainfall, temperature and reservoir readings from the
+1,747 river gauges and dams the Central Water Commission reports on, scraped
+from its [Flood Forecast System portal](https://ffs.india-water.gov.in) and
+published as Parquet.
 
-Each reading is a measurement taken at a CWC river gauge or dam, covering ~1,900
-stations across India and 25 parameters. Records reach back to the 1960s for some
-stations.
+Browse it at
+[diagram-chasing.github.io/cwc-flood-forecasts](https://diagram-chasing.github.io/cwc-flood-forecasts/).
 
-View the raw dataset on the [Releases](../../releases) page.
+The record holds 34.7 million station-parameter-days. It reaches back to 1900
+and only becomes dense around 1975, so treat anything earlier as scattered.
 
-## Data
+## The data
 
-The station master is published in the repository as
-[CSV](data/stations.csv) and [GeoJSON](data/stations.geojson), one row per station
-with coordinates and flood thresholds (warning, danger, FRL, MWL, highest flood level).
+The station master is in this repository as [CSV](data/stations.csv) and
+[GeoJSON](data/stations.geojson): one row per station, with coordinates and
+whichever of the warning, danger, full reservoir, maximum water and highest
+flood levels the Commission publishes for it.
 
-The readings are published as [Parquet](../../releases) on the Releases page, in two
-tiers:
+The readings themselves are too large for a repository and are attached to the
+monthly [releases](../../releases) instead, in two tiers:
 
-* `daily/year=YYYY.parquet` - full history, one row per station, parameter and day,
-  carrying `min`, `mean`, `max`, `sum` and observation count. Use `sum` for rainfall
-  and `min`/`mean`/`max` for levels and flows.
-* `hourly/year=YYYY/month=MM.parquet` - native sub-daily readings, last three years
-  only, one row per station, parameter and timestamp.
+* `daily/year=YYYY.parquet` covers the whole record, one row per station,
+  parameter and day, carrying that day's `min`, `mean`, `max`, `sum` and
+  reading count. Start here.
+* `hourly/year=YYYY/month=MM.parquet` holds the individual readings behind the
+  last three years, one row per station, parameter and timestamp. Older ones are
+  pruned as they age out.
 
-See [DATA.md](DATA.md) for the schema and data dictionary.
+[DATA.md](DATA.md) defines every column, lists the parameter codes, and describes
+the three quality problems in the source worth knowing about before you analyse
+anything.
 
-## Generate
+## Building it yourself
 
-Install [uv](https://docs.astral.sh/uv/), then run:
+Install [uv](https://docs.astral.sh/uv/), then `uv sync`. There are two
+commands, and which one you want depends on whether you already have the data.
 
 ```sh
-uv sync
-uv run python run.py backfill
-uv run python run.py update
+uv run python run.py backfill   # every reading from every station, from scratch
+uv run python run.py update     # only what is new since the last run
 ```
 
-## License
+`backfill` walks all 1,747 stations and requests their full history, which takes
+hours and is what you want on an empty checkout. `update` reads `manifest.json`
+to find where each station left off and asks only for readings after that,
+re-fetching the last stored day so its daily summary is recomputed over all of
+its hours. Overlapping rows are replaced, not duplicated, so running either
+command twice is safe.
 
-This flood-forecast-system dataset is made available under the
-[Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).
+A [scheduled workflow](.github/workflows/update.yml) runs `update` monthly and
+attaches the result to a release.
 
-Some individual contents of the database are under copyright by the Central Water
-Commission.
+Add `--limit N` to either command to stop after N stations, which is the quick
+way to check that the portal is still answering.
 
-You are free:
+## Licence
 
-* **To share**: To copy, distribute and use the database.
-* **To create**: To produce works from the database.
-* **To adapt**: To modify, transform and build upon the database.
+The database is offered under the
+[Open Database License](https://opendatacommons.org/licenses/odbl/1-0/): use it,
+change it and build on it freely, as long as you credit this dataset, release
+any adapted database under the same licence, and do not lock it behind DRM
+without also offering an unrestricted copy.
 
-As long as you:
-
-* **Attribute**: You must attribute any public use of the database, or works produced from the database, in the manner specified in the ODbL. For any use or redistribution of the database, or works produced from it, you must make clear to others the license of the database and keep intact any notices on the original database.
-* **Share-Alike**: If you publicly use any adapted version of this database, or works produced from an adapted database, you must also offer that adapted database under the ODbL.
-* **Keep open**: If you redistribute the database, or an adapted version of it, then you may use technological measures that restrict the work (such as DRM) as long as you also redistribute a version without such measures.
+The Commission holds copyright in some of the individual readings. The ODbL
+covers the database, not every fact inside it, so check with the Commission
+before republishing large extracts as its data rather than as yours.
 
 ## Source
 
-The data comes from the [Flood Forecast System](https://ffs.india-water.gov.in)
-portal operated by the Central Water Commission.
+Everything here comes from the
+[Flood Forecast System](https://ffs.india-water.gov.in) portal, which the
+Central Water Commission operates. Nothing is modelled, interpolated or
+corrected on the way through.
 
 ## AI declaration
 

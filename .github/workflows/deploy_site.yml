@@ -1,0 +1,78 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Synchronize Python dependencies
+        run: uv sync
+
+      # The readings are not in the repository, so the loaders have nothing to
+      # aggregate until the latest monthly snapshot is unpacked over data/.
+      - name: Fetch the data release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --pattern data.zip --clobber
+          unzip -q -o data.zip
+          ls data/daily | head -3
+
+      # package_json_file is required because package.json is not at the repo
+      # root. It reads the `packageManager` field from there.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: site/package.json
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install site dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: site
+
+      - name: Build the site
+        run: pnpm build
+        working-directory: site
+
+      - name: Upload the build
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  # This job 404s until Pages is enabled once, with the Actions build source:
+  #   gh api -X POST repos/diagram-chasing/cwc-flood-forecasts/pages -f build_type=workflow
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

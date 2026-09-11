@@ -1,0 +1,4 @@
+# Framework builds without esbuild's postinstall; the platform binary package
+# ships prebuilt. pnpm 11 fails the install check until the choice is explicit.
+allowBuilds:
+  esbuild: false

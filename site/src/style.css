@@ -1,0 +1,80 @@
+@import url("observablehq:default.css");
+/* Setting `style` in the config disables the `theme` option, so the theme has to
+   be imported here or every --theme-* variable is empty. */
+@import url("observablehq:theme-near-midnight.css");
+
+/* Water palette. Stage rises through these: the river, then the two levels the
+   Commission forecasts against. */
+:root {
+  --water: #57c5e8;
+  --water-deep: #2b6f9e;
+  --rain: #8fd3ff;
+  --warning: #e9b44c;
+  --danger: #ef6f5c;
+}
+
+/* The footer is a sibling of main, not a child. Both need the width. */
+#observablehq-main,
+#observablehq-footer {
+  max-width: 1180px;
+}
+
+#observablehq-main h1 {
+  max-width: none;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+#observablehq-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: solid 1px var(--theme-foreground-faintest);
+}
+
+.lede {
+  color: var(--theme-foreground-muted);
+  max-width: 46rem;
+  margin: -0.5rem 0 2rem;
+}
+
+.card h2 {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.card h3 {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--theme-foreground-muted);
+  margin: 0.15rem 0 0.5rem;
+}
+
+.big {
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  margin: 0.4rem 0 0;
+}
+
+.big.small {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.big.water {
+  color: var(--water);
+}
+
+.controls {
+  margin: 2rem 0 1rem;
+}
+
+.table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
